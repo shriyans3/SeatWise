@@ -1,0 +1,74 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#F4F4F4"/>
+
+  <!-- Define Grid -->
+  <defs>
+    <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
+      <rect width="80" height="80" fill="none" stroke="lightgray" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- Apply Grid -->
+  <rect width="800" height="600" fill="url(#grid)"/>
+
+
+
+  
+  <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Desk PNG Image -->
+  <image href="desk.png" class="draggable" x="400" y="147" width="80" height="100" id="manager-1"/>
+  <image href="filled.png" class="draggable" x="720" y="310" width="80" height="100" id="board-1"/>
+  <image href="filled.png" class="draggable" x="720" y="390" width="80" height="100" id="board-2"/>
+  <image href="filled.png" class="draggable" x="720" y="480" width="80" height="100" id="board-3"/>
+</svg>
+
+  
+  <!-- Desks in Rows (Aligned in Grid Boxes) -->
+  <g stroke="green" stroke-width="3" fill="white" class="desks">
+    <!-- Row 1 -->
+    <circle cx="40" cy="40" r="25" class="desk" id="desk-1"/>
+    <circle cx="120" cy="40" r="25" class="desk" id="desk-2"/>
+    <circle cx="200" cy="40" r="25" class="desk" id="desk-3"/>
+    <circle cx="280" cy="40" r="25" class="desk" id="desk-4"/>
+    <circle cx="360" cy="40" r="25" class="desk" id="desk-5"/>
+
+    <!-- Row 2 -->
+    <circle cx="40" cy="120" r="25" class="desk" id="desk-6"/>
+    <circle cx="120" cy="120" r="25" class="desk" id="desk-7"/>
+    <circle cx="200" cy="120" r="25" class="desk" id="desk-8"/>
+    <circle cx="280" cy="120" r="25" class="desk" id="desk-9"/>
+    <circle cx="360" cy="120" r="25" class="desk" id="desk-10"/>
+
+    <!-- Row 3 -->
+    <circle cx="40" cy="200" r="25" class="desk" id="desk-11"/>
+    <circle cx="120" cy="200" r="25" class="desk" id="desk-12"/>
+    <circle cx="200" cy="200" r="25" class="desk" id="desk-13"/>
+    <circle cx="280" cy="200" r="25" class="desk" id="desk-14"/>
+    <circle cx="360" cy="200" r="25" class="desk" id="desk-15"/>
+  </g>
+   <a href="https://thenounproject.com/browse/icons/term/boardroom/" target="_blank" title="boardroom Icons">Noun Project</a> (CC BY 3.0)
+  <!-- Black Dots Inside Circles -->
+  <g fill="black">
+    <circle cx="40" cy="40" r="5"/>
+    <circle cx="120" cy="40" r="5"/>
+    <circle cx="200" cy="40" r="5"/>
+    <circle cx="280" cy="40" r="5"/>
+    <circle cx="360" cy="40" r="5"/>
+
+    <circle cx="40" cy="120" r="5"/>
+    <circle cx="120" cy="120" r="5"/>
+    <circle cx="200" cy="120" r="5"/>
+    <circle cx="280" cy="120" r="5"/>
+    <circle cx="360" cy="120" r="5"/>
+
+    <circle cx="40" cy="200" r="5"/>
+    <circle cx="120" cy="200" r="5"/>
+    <circle cx="200" cy="200" r="5"/>
+    <circle cx="280" cy="200" r="5"/>
+    <circle cx="360" cy="200" r="5"/>
+  </g>
+
+
+</svg>

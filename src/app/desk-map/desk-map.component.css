@@ -1,0 +1,16 @@
+.svg-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f4f4f4;
+  padding: 20px;
+}
+
+svg {
+  width: 100%;
+  height: auto;
+  max-width: 600px;  /* Adjust as needed */
+}
+
+
+
