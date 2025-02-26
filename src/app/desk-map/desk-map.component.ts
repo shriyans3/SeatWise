@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, AfterViewInit, ElementRef, ViewChild, Output, EventEmitter } from '@angular/core';
 import { SeatService } from '../seat.service';
 
 @Component({
@@ -6,16 +6,24 @@ import { SeatService } from '../seat.service';
   templateUrl: './desk-map.component.html',
   styleUrls: ['./desk-map.component.css']
 })
-export class DeskMapComponent implements AfterViewInit{
+export class DeskMapComponent implements AfterViewInit {
   @ViewChild('svgContainer', { static: true }) svgContainer!: ElementRef;
-  bookedSeats: Set<string> = new Set(); // Store booked seats
-  imageState: { [key: string]: string } = {}; // 
+  
+  @Output() selectedDesk = new EventEmitter<string | null>();
+  @Output() selectedBoardroom = new EventEmitter<string | null>();
+
+  bookedSeats: Set<string> = new Set();
+  imageState: { [key: string]: string } = {};
+  
   draggingElement: SVGImageElement | null = null;
   offsetX: number = 0;
   offsetY: number = 0;
   
+  currentlyBookedSeat: SVGElement | null = null;
+  currentlyBookedManagerDesk: SVGImageElement | null = null;
+
   constructor(private seatService: SeatService) {}
-  
+
   ngAfterViewInit() {
     this.loadSVG();
   }
@@ -26,11 +34,13 @@ export class DeskMapComponent implements AfterViewInit{
       .then(svgData => {
         this.svgContainer.nativeElement.innerHTML = svgData;
         this.attachSeatClickEvents();
+        this.attachManagerClickEvents();
         this.makeDraggable();
         this.makeImagesClickable();
       })
       .catch(error => console.error('Error loading SVG:', error));
   }
+
   attachSeatClickEvents() {
     const seats = this.svgContainer.nativeElement.querySelectorAll('.desk');
 
@@ -38,20 +48,65 @@ export class DeskMapComponent implements AfterViewInit{
       seat.addEventListener('click', () => {
         const seatId = seat.id;
 
-        if (this.bookedSeats.has(seatId)) {
-          this.bookedSeats.delete(seatId);
-          seat.setAttribute("fill", "white"); // Unbook seat
+        if (this.currentlyBookedSeat === seat) {
+          seat.setAttribute('data-booked', 'false');
+          seat.setAttribute('fill', 'white'); // Unbook seat
+          this.currentlyBookedSeat = null;
+          this.selectedDesk.emit(null);
         } else {
-          this.bookedSeats.add(seatId);
-          seat.setAttribute("fill", "red"); // Book seat
+          if (this.currentlyBookedSeat) {
+            this.currentlyBookedSeat.setAttribute('data-booked', 'false');
+            this.currentlyBookedSeat.setAttribute('fill', 'white');
+          }
+
+          seat.setAttribute('data-booked', 'true');
+          seat.setAttribute('fill', 'red');
+          this.currentlyBookedSeat = seat;
+          this.selectedDesk.emit(seatId);
         }
 
-        // Update booked seat count in SeatService
-        this.seatService.updateBookedSeats(this.bookedSeats.size);
+        this.seatService.updateBookedSeats(this.currentlyBookedSeat ? 1 : 0);
       });
-      
+
+      seat.addEventListener('mouseover', () => {
+        if (seat.getAttribute('data-booked') !== 'true') {
+          seat.setAttribute('fill', 'grey'); 
+        }
+      });
+
+      seat.addEventListener('mouseout', () => {
+        if (seat.getAttribute('data-booked') !== 'true') {
+          seat.setAttribute('fill', 'white'); 
+        }
+      });
     });
   }
+
+  attachManagerClickEvents() {
+    const managerDesks = this.svgContainer.nativeElement.querySelectorAll('.manager');
+
+    managerDesks.forEach((desk: SVGImageElement) => {
+      desk.addEventListener('click', () => {
+        if (this.currentlyBookedManagerDesk === desk) {
+          desk.setAttribute('data-booked', 'false');
+          desk.setAttribute('href', 'manager-desk.png'); // Reset image
+          this.currentlyBookedManagerDesk = null;
+          this.selectedBoardroom.emit(null);
+        } else {
+          if (this.currentlyBookedManagerDesk) {
+            this.currentlyBookedManagerDesk.setAttribute('data-booked', 'false');
+            this.currentlyBookedManagerDesk.setAttribute('href', 'manager-desk.png');
+          }
+
+          desk.setAttribute('data-booked', 'true');
+          desk.setAttribute('href', 'desk.png'); // Set booked image
+          this.currentlyBookedManagerDesk = desk;
+          this.selectedBoardroom.emit(desk.id);
+        }
+      });
+    });
+  }
+
   makeImagesClickable() {
     const images = this.svgContainer.nativeElement.querySelectorAll('image');
 
@@ -59,17 +114,18 @@ export class DeskMapComponent implements AfterViewInit{
       image.addEventListener('click', () => this.toggleImage(image));
     });
   }
+
   toggleImage(image: SVGImageElement) {
     const currentSrc = image.getAttribute('href');
 
     if (currentSrc === 'desk.png') {
-      image.setAttribute('href', 'empty-desk.png'); // Change to empty desk
+      image.setAttribute('href', 'empty-desk.png'); 
     } else if (currentSrc === 'empty-desk.png') {
-      image.setAttribute('href', 'desk.png'); // Change back to desk
+      image.setAttribute('href', 'desk.png'); 
     } else if (currentSrc === 'filled.png') {
-      image.setAttribute('href', 'unfilled.png'); // Change to unfilled desk
+      image.setAttribute('href', 'unfilled.png'); 
     } else if (currentSrc === 'unfilled.png') {
-      image.setAttribute('href', 'filled.png'); // Change back to filled desk
+      image.setAttribute('href', 'filled.png'); 
     }
   }
 
@@ -86,28 +142,25 @@ export class DeskMapComponent implements AfterViewInit{
 
   startDrag(event: MouseEvent, image: SVGImageElement) {
     this.draggingElement = image;
-
-    /// Convert mouse coordinates to SVG coordinates
+    
     const svgRect = this.svgContainer.nativeElement.getBoundingClientRect();
     const imageX = parseFloat(image.getAttribute('x') || '0');
     const imageY = parseFloat(image.getAttribute('y') || '0');
 
-    // Calculate offset within the SVG coordinate system
     this.offsetX = event.clientX - svgRect.left - imageX;
     this.offsetY = event.clientY - svgRect.top - imageY;
   }
 
   drag(event: MouseEvent) {
     if (this.draggingElement) {
-      const gridSize = 80; // Adjust grid size as needed
+      const gridSize = 80; 
       const svgRect = this.svgContainer.nativeElement.getBoundingClientRect();
       let newX = event.clientX - svgRect.left - this.offsetX;
       let newY = event.clientY - svgRect.top - this.offsetY;
-  
-      // Snap to nearest grid point
+
       newX = Math.round(newX / gridSize) * gridSize;
       newY = Math.round(newY / gridSize) * gridSize;
-  
+
       this.draggingElement.setAttribute('x', `${newX}`);
       this.draggingElement.setAttribute('y', `${newY}`);
     }
@@ -117,28 +170,22 @@ export class DeskMapComponent implements AfterViewInit{
     this.draggingElement = null;
   }
 
-  /** ✅ Reset all bookings and images  (Wrong Working) */
   resetBookings() {
-    this.bookedSeats.clear(); // Clear all booked seats
+    this.bookedSeats.clear();
 
-    // Reset all seats to white (available)
     const seats = this.svgContainer.nativeElement.querySelectorAll('.desk');
     seats.forEach((seat: SVGElement) => {
       seat.setAttribute('fill', 'white');
     });
 
-    // Reset all images to their original state
-    const images = this.svgContainer.nativeElement.querySelectorAll('image');
-    images.forEach((image: SVGImageElement) => {
-      const id = image.getAttribute('id');
-      if (id && this.imageState[id]) {
-        delete this.imageState[id]; // Remove the modified state
-        if (image.getAttribute('href')?.includes('empty')) {
-          image.setAttribute('href', 'desk.png'); // Reset empty desks
-        } else if (image.getAttribute('href')?.includes('unfilled')) {
-          image.setAttribute('href', 'filled.png'); // Reset filled desks
-        }
-      }
+    const managerDesks = this.svgContainer.nativeElement.querySelectorAll('.manager');
+    managerDesks.forEach((desk: SVGImageElement) => {
+      desk.setAttribute('data-booked', 'false');
+      desk.setAttribute('href', 'manager-desk.png');
     });
+
+    this.selectedDesk.emit(null);
+    this.selectedBoardroom.emit(null);
+    this.seatService.updateBookedSeats(0);
   }
 }

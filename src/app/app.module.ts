@@ -5,12 +5,14 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DeskMapComponent } from './desk-map/desk-map.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
+import { BookingComponent } from './booking/booking.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     DeskMapComponent,
-    SidebarComponent
+    SidebarComponent,
+    BookingComponent
   ],
   imports: [
     BrowserModule,

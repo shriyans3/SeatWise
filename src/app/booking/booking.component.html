@@ -1,0 +1,11 @@
+<div class="booking-container">
+    <h2>Confirm Your Booking</h2>
+    
+    <p *ngIf="selectedDesk">🖥️ Desk Selected: <strong>{{ selectedDesk }}</strong></p>
+    <p *ngIf="selectedBoardroom">🏢 Boardroom Selected: <strong>{{ selectedBoardroom }}</strong></p>
+  
+    <p *ngIf="!selectedDesk && !selectedBoardroom">No spots selected.</p>
+  
+    <button (click)="confirmBooking()" [disabled]="!selectedDesk && !selectedBoardroom">Confirm</button>
+  </div>
+  
